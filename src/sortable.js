@@ -13,14 +13,22 @@ angular.module('ui.sortable', [])
         link: function(scope, element, attrs, ngModel) {
           var savedNodes;
 
-          function combineCallbacks(first,second){
-            if(second && (typeof second === "function")) {
-              return function(e, ui) {
+          function combineCallbacks(first, second) {
+            if (second && (typeof second === "function")) {
+              return function (e, ui) {
                 first(e, ui);
                 second(e, ui);
               };
             }
             return first;
+          }
+                
+          function getIndexOfItem(item) {
+            var items = $.makeArray(item.context.parentNode.children).filter(function (i) {
+              return i.localName === 'li' && i.className.indexOf('ui-sortable-placeholder') < 0;
+            });
+
+            return items.indexOf(item.context);
           }
 
           var opts = {};
@@ -48,7 +56,7 @@ angular.module('ui.sortable', [])
 
             callbacks.start = function(e, ui) {
               // Save the starting position of dragged item
-              ui.item.sortable = { index: ui.item.index() };
+              ui.item.sortable = { index: getIndexOfItem(ui.item) };
             };
 
             callbacks.activate = function(e, ui) {
@@ -79,7 +87,7 @@ angular.module('ui.sortable', [])
               // update that happens when moving between lists because then
               // the value will be overwritten with the old value
               if(!ui.item.sortable.received) {
-                ui.item.sortable.dropindex = ui.item.index();
+                ui.item.sortable.dropindex = getIndexOfItem(ui.item);
 
                 // Cancel the sort (let ng-repeat do the sort for us)
                 // Don't cancel if this is the received list because it has
